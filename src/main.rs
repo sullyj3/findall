@@ -4,6 +4,7 @@ use std::env;
 use std::fs::File;
 use std::io::Read;
 use walkdir::WalkDir;
+use std::collections::HashMap;
 
 fn usage() -> ! {
     eprintln!("Usage: {} <space separated patterns> <path>", env::args().next().unwrap());
@@ -35,8 +36,13 @@ fn main() -> Result<()> {
                 continue;
             };
 
-            if contains_all_patterns(&ac, &contents) {
-                println!("Found all patterns in {:?}", path);
+
+            let counts = match_counts(&ac, &patterns, &contents);
+            if counts.values().all(|&x| x > 0) {
+                println!("{}", path.display());
+                for (pattern, count) in counts {
+                    println!("    {}: {}", pattern, count);
+                }
             }
         }
     }
@@ -44,12 +50,13 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn contains_all_patterns(ac: &AhoCorasick, contents: &str) -> bool {
-    let mut found = vec![false; ac.pattern_count()];
+fn match_counts(ac: &AhoCorasick, patterns: &[String], contents: &str) -> HashMap<String, i32> {
+    let mut counter: HashMap<String, i32> = 
+        HashMap::from_iter(patterns.iter().map(|p| (p.clone(), 0)));
 
     for m in ac.find_iter(contents) {
-        found[m.pattern()] = true;
+        counter.entry(patterns[m.pattern()].clone()).and_modify(|c| *c += 1);
     }
 
-    found.iter().all(|&x| x)
+    counter
 }
