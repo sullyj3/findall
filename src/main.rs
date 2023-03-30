@@ -40,7 +40,10 @@ fn main() -> Result<()> {
             let counts = match_counts(&ac, &patterns, &contents);
             if counts.values().all(|&x| x > 0) {
                 println!("{}", path.display());
-                for (pattern, count) in counts {
+                for pattern in &patterns {
+                    // we iterate the pattern vec rather than the counts map directly
+                    // so as to preserve the order of the patterns
+                    let count = counts.get(pattern).unwrap();
                     println!("    {}: {}", pattern, count);
                 }
             }
