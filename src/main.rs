@@ -39,13 +39,14 @@ fn main() -> Result<()> {
 
             let counts = match_counts(&ac, &patterns, &contents);
             if counts.values().all(|&x| x > 0) {
-                println!("{}", path.display());
-                for pattern in &patterns {
-                    // we iterate the pattern vec rather than the counts map directly
-                    // so as to preserve the order of the patterns
+                let stripped_path = path.strip_prefix("./").unwrap_or(path);
+                println!("{}", stripped_path.display());
+                let match_counts_string = patterns.iter().map(|pattern| {
                     let count = counts.get(pattern).unwrap();
-                    println!("    {}: {}", pattern, count);
-                }
+                    format!("{}: {}", pattern, count)
+                }).collect::<Vec<String>>()
+                  .join(", ");
+                println!("    {}", match_counts_string);
             }
         }
     }
