@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::Read;
 use walkdir::WalkDir;
 use std::collections::HashMap;
+use colored::Colorize;
 
 fn usage() -> ! {
     eprintln!("Usage: {} <space separated patterns> <path>", env::args().next().unwrap());
@@ -40,10 +41,10 @@ fn main() -> Result<()> {
             let counts = match_counts(&ac, &patterns, &contents);
             if counts.values().all(|&x| x > 0) {
                 let stripped_path = path.strip_prefix("./").unwrap_or(path);
-                println!("{}", stripped_path.display());
+                println!("{}", stripped_path.display().to_string().red());
                 let match_counts_string = patterns.iter().map(|pattern| {
                     let count = counts.get(pattern).unwrap();
-                    format!("{}: {}", pattern, count)
+                    format!("{}: {}", pattern.blue(), count)
                 }).collect::<Vec<String>>()
                   .join(", ");
                 println!("    {}", match_counts_string);
